@@ -59,3 +59,8 @@ class User(AbstractUser):
         """
         full_name = f"{self.first_name} {self.last_name}"
         return full_name.strip()
+    
+    def save(self, *args,**kwargs):
+        if not self.email.islower():
+            self.email = self.email.strip().lower()
+        super().save(*args, **kwargs)

@@ -1,15 +1,16 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from accounts.models import User
-from accounts.forms import CustomUserCreationForm, CustomUserChangeForm, ProfileEditForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm, ProfileEditForm
 
 class CustomUserAdmin(UserAdmin):
     add_form = CustomUserCreationForm
     form = CustomUserChangeForm
     model = User
-    list_display = ('email', 'first_name', 'last_name', 
+    list_display = ('id','email', 'first_name', 'last_name', 
                     'gender', 'phone','verified', 'is_staff')
-    list_filter = ('email', 'phone', 'is_staff', 'suspended', 'first_name')
+    list_filter = ('is_staff', 'suspended','gender')
+    search_fields = ('first_name', 'email', 'phone', 'last_name')
     readonly_fields = ('date_joined', 'last_login','email_verified_at', 'phone_verified_at')
     fieldsets = (
                  (None, {'fields':('email', 'password')}),
@@ -32,9 +33,7 @@ class CustomUserAdmin(UserAdmin):
             }),
         )
 
-    search_fields = ('email', 'first_name', 'last_name', 'phone', 'gender')
-
-    ordering = ('date_joined',)
+    ordering = ('-date_joined',)
 
 
 admin.site.register(User, CustomUserAdmin)
