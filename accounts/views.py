@@ -125,7 +125,7 @@ class LoginViewSet(APIView):
         if email and password:
             try:
                 if email.isnumeric():
-                    user = User.objects.get(phone = email)
+                    user = User.objects.get(phone=email)
                 else:
                     user = User.objects.get(email=email)
 
