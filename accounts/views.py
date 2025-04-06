@@ -109,10 +109,6 @@ class ProfileViewSet(APIView):
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-def logoutuser(request):
-    logout(request)
-    return redirect('/login')
-
 
 class LoginViewSet(APIView):
     permission_classes = [AllowAny]

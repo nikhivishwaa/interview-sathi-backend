@@ -5,7 +5,6 @@ from accounts import views
 urlpatterns = [
     path('signup/', views.SignupViewSet.as_view(), name='signup'),
     path('login/', views.LoginViewSet.as_view(), name='login'),
-    path('logout/', views.logoutuser, name='logout'),
 
     path("changepassword/", views.ChangePasswordView.as_view(), name="change-password"),
     path("refresh/", TokenRefreshView.as_view(), name="refresh-token"),

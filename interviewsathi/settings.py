@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 EXTERNAL_APPS = [
                  'accounts',
                  'interview',
+                 'channels'
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
@@ -95,6 +96,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'interviewsathi.wsgi.application'
+# Channels
+ASGI_APPLICATION = 'interviewsathi.asgi.application'
 
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -122,6 +125,19 @@ DATABASES = {
     }
 }
 
+# cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_HOST'),
+    }
+}
+
+
+# llm
+LLM_API_URL = os.getenv('LLM_API_URL')
+LLM_MODEL_NAME = os.getenv('LLM_MODEL_NAME')
+
 # JWT authentication
 
 
@@ -132,8 +148,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=2),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=4),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=4),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=10),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False
 }
@@ -177,7 +193,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type
