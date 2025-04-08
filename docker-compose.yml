@@ -1,4 +1,4 @@
-version: '3.9'
+# version: '3.9'
 
 services:
   redis:
@@ -10,18 +10,18 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
-  web:
-    build: .
-    container_name: django_app
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - redis
-    environment:
-      - REDIS_URL=redis://redis:6379/0
+  # web:
+  #   build: .
+  #   container_name: django_app
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - redis
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
 
 volumes:
   redis_data:
