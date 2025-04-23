@@ -6,7 +6,7 @@ import datetime as dt
 import random as rd
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
-from accounts.serializers import LoginSerializer, RegisterSerializer, ProfileSerializer, ChangePasswordSerializer
+from accounts.serializers import RegisterSerializer, ProfileSerializer, ChangePasswordSerializer, ProfileUpdateSerializer
 from accounts.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -34,7 +34,7 @@ class SignupViewSet(APIView):
                     'message': 'User already exists',
                     'data': serializer.validated_data
                 }
-                return Response(response, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response, status=status.HTTP_409_CONFLICT)
             else:
                 user = serializer.save()
                 print(user,"created successfully")
@@ -109,6 +109,52 @@ class ProfileViewSet(APIView):
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request):
+        try:
+            serializer = ProfileUpdateSerializer(data=request.data)
+            if serializer.is_valid():
+                data = serializer.validated_data
+                user = request.user
+                if user.phone != data['phone']:
+                    try:
+                        user = User.objects.get(phone=data.get('phone'))
+                        res = {
+                            "status":"failed",
+                            "message":"Phone Number is Already Used. Try Another Number!",
+                            "data":{}
+                        }
+
+                        return Response(res, status=status.HTTP_409_CONFLICT)
+                    except Exception as e:
+                        pass
+
+                for key, value in data.items():
+                    if hasattr(user, key):  # only set existing fields
+                        setattr(user, key, value)
+                user.save()
+                p_serializer = ProfileSerializer(user)
+                res = {
+                    'status': 'success',
+                    'message': 'Profile Updated Successfully',
+                    'data': p_serializer.data
+                }
+                return Response(res, status=status.HTTP_202_ACCEPTED)
+            else:
+                res = {
+                    'status': 'failed',
+                    'message': 'Invalid Data',
+                    'data': {},
+                    'errors': serializer.errors
+                }
+                return Response(res, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            res = {
+                'status': 'failed',
+                'message': 'Something went Wrong!',
+                'data': {},
+            }
+            return Response(res, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class LoginViewSet(APIView):
     permission_classes = [AllowAny]
@@ -128,7 +174,7 @@ class LoginViewSet(APIView):
                 # now check credentials   
                 if user and user.check_password(password):
                     refresh = RefreshToken.for_user(user)
-                    user_data = LoginSerializer(user).data
+                    user_data = ProfileSerializer(user).data
 
                     response = {
                         'status': 'success',
@@ -147,7 +193,7 @@ class LoginViewSet(APIView):
                         'status': 'failed',
                         'message': 'Invalid Credentials'
                     }
-                    return Response(response, status=status.HTTP_404_NOT_FOUND)
+                    return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
             except User.DoesNotExist:
                 print("error")

@@ -22,18 +22,25 @@ def get_cached_resume(user_id):
     return data
 
 
-class ResumeListView(ListAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = ResumeSerializer
 
-    def get_queryset(self):
-        return Resume.objects.filter(user=self.request.user)
-
-
-class ResumeUploadView(APIView):
+class ResumeAPIView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser]
 
+    def get(self, request):
+        try:
+            resumes = Resume.objects.filter(user=self.request.user).order_by('-uploaded_at')
+            serializer = ResumeSerializer(resumes, many=True)
+
+            res = {
+                "status":"success",
+                "message":"your uploaded resumes",
+                "data": serializer.data
+            }
+            print(res)
+            return Response(res, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"status":"failed"}, status=status.HTTP_404_BAD_REQUEST)
     def post(self, request):
         try:
             resume_file = request.FILES.get('resume')
