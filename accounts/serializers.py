@@ -19,6 +19,23 @@ class ProfileSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'gender', 'college', 'phone', 'email','suspended','verified', 'date_joined'
         )
 
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'first_name', 'last_name', 'gender', 'college', 'phone'
+        )
+        extra_kwargs = {
+            'phone': {
+                'validators': [v.validate_phone],
+                'required': True
+            },
+            'first_name': {'required': True, 'validators': [v.validate_first_name]},
+            'last_name': {'default':'', 'validators': [v.validate_last_name]},
+            'gender': {'required': True, 'validators': [v.validate_gender]},
+            'college': {'required': True, 'validators': [v.validate_college]},
+        }
+
 class ChangePasswordSerializer(serializers.Serializer):
     model = User
     old_password = serializers.CharField(required=True)
