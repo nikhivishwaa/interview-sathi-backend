@@ -35,15 +35,13 @@ class ResumeAPIView(APIView):
     def post(self, request):
         try:
             resume_file = request.FILES.get('resume')
-            resume_name = request.data.get('name').strip()
             if not resume_file:
                 return Response({"status":"failed","message": "resume not provided."}, status=status.HTTP_400_BAD_REQUEST)
             
             if not resume_file.name.endswith('.pdf'):
                 return Response({"status":"failed","message": "resume must be pdf file."}, status=status.HTTP_400_BAD_REQUEST)
             
-            if not resume_name:
-                resume_name = resume_file.name
+            resume_name = resume_file.name
         
             resume_file.name = f"{uuid.uuid4()}_{resume_file.name[-10:]}"
             resume = Resume.objects.create(user=request.user, file=resume_file, name=resume_name)
