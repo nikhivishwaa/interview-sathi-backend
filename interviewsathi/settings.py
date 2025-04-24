@@ -75,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'interviewsathi.urls'
@@ -96,8 +97,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'interviewsathi.wsgi.application'
-# Channels
-ASGI_APPLICATION = 'interviewsathi.asgi.application'
+
 
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -131,6 +131,19 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': os.getenv('REDIS_HOST'),
     }
+}
+
+# Channels
+ASGI_APPLICATION = "interviewsathi.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # "hosts": [("redis", 6379)],  # or 127.0.0.1 if local
+            "hosts": [("localhost", 6379)],  # or 127.0.0.1 if local
+        },
+    },
 }
 
 
@@ -190,8 +203,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')

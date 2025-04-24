@@ -1,16 +1,18 @@
-"""
-ASGI config for interviewsathi project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.1/howto/deployment/asgi/
-"""
-
 import os
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "interviewsathi.settings")  # ✅ First
+
+import django
+django.setup()  # ✅ Must happen before importing models
+
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
+from interview.routing import websocket_urlpatterns  # ✅ After setup
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'interviewsathi.settings')
-
-application = get_asgi_application()
+application = ProtocolTypeRouter({
+    "http": get_asgi_application(),
+    "websocket": AuthMiddlewareStack(
+        URLRouter(websocket_urlpatterns)
+    )
+})

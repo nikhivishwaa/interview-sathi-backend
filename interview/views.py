@@ -10,17 +10,6 @@ from rest_framework.response import Response
 from interview.utils.resume_parser import parse_resume_text, clean_resume_text
 from rest_framework import status
 import uuid
-from django.core.cache import cache
-
-def get_cached_resume(user_id):
-    key = f"user_resume_{user_id}"
-    data = cache.get(key)
-    if not data:
-        # fetch from DB and store in cache
-        resume = Resume.objects.filter(user_id=user_id).latest('uploaded_at')
-        data = resume.parsed_text
-        cache.set(key, data, timeout=3600)  # 1 hour cache
-    return data
 
 
 
