@@ -45,9 +45,6 @@ class ResumeAPIView(APIView):
         
             resume_file.name = f"{uuid.uuid4()}_{resume_file.name[-10:]}"
             resume = Resume.objects.create(user=request.user, file=resume_file, name=resume_name)
-            # parsed_text = parse_resume_text(resume.file.path)
-            # resume.parsed_text = parsed_text
-            # resume.save()
             raw_text = parse_resume_text(resume.file.path)
             cleaned_text = clean_resume_text(raw_text)
             resume.parsed_text = cleaned_text
@@ -91,7 +88,7 @@ class ResumeUpdateAPIView(APIView):
             return Response({"status":"failed","message": "Resume not Exist"}, status=status.HTTP_404_NOT_FOUND)
 
 def home(request):
-    return JsonResponse({"message":"welcome to interview sathi"},status=200)
+    return JsonResponse({"message":"welcome to interview sathi :)"},status=200)
 
 # post of the profile
 # take resume
@@ -131,6 +128,7 @@ class ScheduleInterviewView(APIView):
         print(request.data)
         role = request.data.get('role')
         resume_id = request.data.get('resume_id')
+        job_desc = request.data.get('job_desc')
         scheduled_at = request.data.get('scheduled_at')  # ISO string
 
         if role not in ['frontend', 'backend']:
@@ -152,13 +150,13 @@ class ScheduleInterviewView(APIView):
         try:
             print("checking resume")
             resume = Resume.objects.get(id=resume_id, user=request.user)
-            # resume = Resume.objects.get(id=3, user=request.user)
             print("checked resume")
             session = InterviewSession.objects.create(
                 user=request.user,
                 resume=resume,
                 role=role,
                 scheduled_at=scheduled_at,
+                job_desc=job_desc or "N/A",
                 metadata={}
             )
             print('session:', session)
@@ -177,5 +175,60 @@ class ScheduleInterviewView(APIView):
                 "status":"failed",
                 "message": "Resume not found",
                 "data":{}
+            }
+            return Response(res, status=status.HTTP_404_NOT_FOUND)
+
+
+class CancelInterviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, inerview_id):
+        try:         
+            session = InterviewSession.objects.get(id=inerview_id, user=request.user, status='scheduled')
+            session.status = 'canceled'
+            session.is_active = False
+            session.save()
+
+            serializer = InterviewSessionSerializer(session)
+
+            res = {
+                "status":"success",
+                "message":"Your Interview Cancelled",
+                "data":serializer.data
+            }
+            
+            return Response(res, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            res = {
+                "status":"failed",
+                "message": "Interview not Found",
+                "data":[]
+            }
+            return Response(res, status=status.HTTP_404_NOT_FOUND)
+
+class InterviewFeedbackView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, inerview_id):
+        try:         
+            session = InterviewSession.objects.get(id=inerview_id, user=request.user, status='completed')
+            
+            # serializer = InterviewSessionSerializer(session)
+
+            res = {
+                "status":"success",
+                "message":"Your Interview Feddback",
+                # "data":serializer.data
+                "data":session.metadata.get('feedback', 'No feedback available')
+            }
+            
+            return Response(res, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
+            res = {
+                "status":"failed",
+                "message": "Interview not Found",
+                "data":[]
             }
             return Response(res, status=status.HTTP_404_NOT_FOUND)

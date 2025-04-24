@@ -44,6 +44,7 @@ class InterviewSession(models.Model):
                 )
     
     metadata = models.JSONField(null=True, blank=True)
+    job_desc = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=25, choices=STATUS_CHOICE, default='scheduled', null=False, blank=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE)
@@ -54,6 +55,9 @@ class InterviewSession(models.Model):
     ended_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True, null=False, blank=False)
     last_updated = models.DateTimeField(auto_now=True, null=False, blank=False)
+
+    def __str__(self):
+        return f"Interview for {self.role} - {self.status}"
 
 
 class InterviewQuestion(models.Model):
@@ -83,3 +87,6 @@ class InterviewHistory(models.Model):
     answer = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True, null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.session} - Q|A: {self.answer[:10]}..."

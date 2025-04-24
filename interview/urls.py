@@ -6,4 +6,6 @@ urlpatterns = [
     path('resumes/', views.ResumeAPIView.as_view()),
     path('resumes/<int:resume_id>/', views.ResumeUpdateAPIView.as_view()),
     path('interviews/', views.ScheduleInterviewView.as_view()),
+    path('feedback/<int:interview_id>/', views.InterviewFeedbackView.as_view()),
+    path('interviews/<int:interview_id>/', views.ScheduleInterviewView.as_view()),
 ]

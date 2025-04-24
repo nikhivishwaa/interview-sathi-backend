@@ -1,22 +1,23 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 import json
 from interview.models import InterviewSession, InterviewHistory, InterviewQuestion, Resume
-from interview.utils.llm import model_followup, model_feedback
+from interview.utils.chains import model_followup, model_feedback
+# from interview.utils.llm import model_followup, model_feedback
 from asgiref.sync import sync_to_async
 from django.core.cache import cache
 from django.utils import timezone
 
-def get_cached_resume(session):
+async def get_cached_resume(session):
     key = f"user_resume_{session.id}"
     data = cache.get(key)
     if not data:
         # fetch from DB and store in cache
-        data = session.resume.parsed_text
+        data = await sync_to_async(lambda: session.resume.parsed_text)()
         cache.set(key, data, timeout=3600)  # 1 hour cache
     return data
 
-def get_intro(session):
-    key = f"user_intro_{session.id}"
+def get_intro(session_id):
+    key = f"user_intro_{session_id}"
     data = cache.get(key)
     return f"<Candidate Introduction>{data}</Candidate Introduction>"
 
@@ -43,13 +44,6 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             'question': intro_question
         }))
 
-        # Send initial question
-        # first_question = await sync_to_async(self.get_first_question)()
-        # await self.send(text_data=json.dumps({
-        #     'question_id': first_question.id,
-        #     'question': first_question.question_text
-        # }))
-
     def mark_session_active(self):
         session = InterviewSession.objects.get(id=self.session_id)
         session.is_active = True
@@ -75,6 +69,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         session.save()
 
     async def _finalize_session(self):
+        # try:
         session = await sync_to_async(InterviewSession.objects.get)(id=self.session_id)
         session.ended_at = timezone.now()
         session.is_active = False
@@ -87,22 +82,27 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         )()
         qas = [{"question": h["question__question_text"], "answer": h["answer"]} for h in history]
 
-        resume_text = get_cached_resume(session)
-        introduction = get_intro(session)
-        feedback = await sync_to_async(model_feedback)(qas, resume_text, introduction)
+        resume_text = await get_cached_resume(session)
+        introduction = get_intro(session.id)
+        feedback = await sync_to_async(model_feedback)(qas, resume_text, introduction, session.job_desc)
 
         session.metadata['feedback'] = feedback
         session.save()
 
         # Store or cache feedback if needed
         cache.set(f"feedback_{session.id}", feedback, timeout=3600)
+    
+        # except Exception as e:
+        #     print("error",e)
 
     async def receive(self, text_data):
+        # try:
         data = json.loads(text_data)
 
         print("💬 Received WebSocket data:", data)  # ✅ Add this
 
         if data.get("type") == "end_interview":
+            print("Ending interview...")
             await self._finalize_session()
             await self.send(text_data=json.dumps({
                 "type": "interview_ended",
@@ -111,15 +111,15 @@ class InterviewConsumer(AsyncWebsocketConsumer):
             }))
             return
 
+        session = await sync_to_async(InterviewSession.objects.get)(id=self.session_id)
         if data.get('question_id')=='intro':
-            set_intro(data.get('answer'))
+            set_intro(session=session, intro=data.get('answer'))
 
         else:
             question_id = data['question_id']
             answer = data['answer']
 
             question = await sync_to_async(InterviewQuestion.objects.get)(id=question_id)
-            session = await sync_to_async(InterviewSession.objects.get)(id=self.session_id)
 
             await sync_to_async(InterviewHistory.objects.create)(
                 session=session,
@@ -127,8 +127,8 @@ class InterviewConsumer(AsyncWebsocketConsumer):
                 answer=answer
             )
 
-        resume_text = get_cached_resume(session)
-        introduction = get_intro(session)
+        resume_text = await get_cached_resume(session)
+        introduction = get_intro(session.id)
 
         history = await sync_to_async(
             lambda: list(
@@ -138,9 +138,9 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         )()
         qas = [{"question": h["question__question_text"], "answer": h["answer"]} for h in history]
 
-        followup_text = await sync_to_async(model_followup)(qas, resume_text, introduction)
+        followup_text = await sync_to_async(model_followup)(qas, resume_text, introduction, session.job_desc)
 
-        print("🧠 DeepSeek follow-up:", followup_text)
+        print("🧠model follow-up:", followup_text)
 
         # Save to InterviewQuestion
         followup_q = await sync_to_async(InterviewQuestion.objects.create)(
@@ -153,4 +153,6 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'question_id': followup_q.id,
             'question': followup_text
-        }))
+        })) 
+        # except Exception as e:
+        #     print("error",e)
