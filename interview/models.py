@@ -22,6 +22,7 @@ class QuestionPDF(models.Model):
     def __str__(self):
         return f"{self.domain}: {self.level} - {self.title[:10]}..."
 
+
 class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
