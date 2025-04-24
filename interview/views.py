@@ -182,9 +182,9 @@ class ScheduleInterviewView(APIView):
 class CancelInterviewView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, inerview_id):
+    def delete(self, request, interview_id):
         try:         
-            session = InterviewSession.objects.get(id=inerview_id, user=request.user, status='scheduled')
+            session = InterviewSession.objects.get(id=interview_id, user=request.user, status='scheduled')
             session.status = 'canceled'
             session.is_active = False
             session.save()
@@ -210,9 +210,9 @@ class CancelInterviewView(APIView):
 class InterviewFeedbackView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, inerview_id):
+    def get(self, request, interview_id):
         try:         
-            session = InterviewSession.objects.get(id=inerview_id, user=request.user, status='completed')
+            session = InterviewSession.objects.get(id=interview_id, user=request.user, status='completed')
             
             # serializer = InterviewSessionSerializer(session)
 
