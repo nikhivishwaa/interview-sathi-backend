@@ -139,6 +139,7 @@ class InterviewConsumer(AsyncWebsocketConsumer):
         qas = [{"question": h["question__question_text"], "answer": h["answer"]} for h in history]
 
         followup_text = await sync_to_async(model_followup)(qas, resume_text, introduction, session.job_desc)
+        followup_text = followup_text.lstrip('Q:')
 
         print("🧠model follow-up:", followup_text)
 

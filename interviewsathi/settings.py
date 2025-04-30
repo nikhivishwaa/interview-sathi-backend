@@ -140,9 +140,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],  # or 127.0.0.1 if local
-            # "hosts": ["redis://redis:6379/"],  # or 127.0.0.1 if local
-            # "hosts": ["redis://redis:6379/"],  # or 127.0.0.1 if local
+            "hosts": [("redis", 6379)],
         },
     },
 }
