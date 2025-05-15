@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from interview.models import QuestionPDF, Resume, InterviewSession,InterviewQuestion, InterviewHistory
 
 @admin.register(QuestionPDF)
@@ -14,9 +14,20 @@ class ResumeAdmin(admin.ModelAdmin):
 
 @admin.register(InterviewSession)
 class InterviewSessionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'resume', 'role', 'is_active', 'created_at']
-    search_fields = ['user__first_name', 'user__last_name']
-    list_filter = ['role', 'is_active']
+    list_display = ['id', 'user', 'resume', 'role', 'is_active', 'status', 'created_at']
+    search_fields = ['user__first_name', 'user__last_name', 'role']
+    list_filter = ['role', 'is_active', 'status']
+    actions = ['mark_completed', 'mark_scheduled']
+
+    @admin.action(description='Mark Interview as Completed')
+    def mark_completed(self, request, queryset):
+        queryset.update(status='completed')
+        messages.success(request, f"{'Interview' if queryset.count()>1 else 'Interviews'} Successfully marked as Completed!")
+
+    @admin.action(description='Mark Interview as Scheduled')
+    def mark_scheduled(self, request, queryset):
+        queryset.update(status='scheduled')
+        messages.success(request, f"{'Interview' if queryset.count()>1 else 'Interviews'} Successfully marked as Scheduled!")
 
 @admin.register(InterviewQuestion)
 class InterviewQuestionAdmin(admin.ModelAdmin):
