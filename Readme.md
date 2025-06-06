@@ -94,7 +94,7 @@ npm run dev
 * 👨‍💻 Nikhlesh Shukla
   [GitHub](https://github.com/Nikhleshshukla123) | [LinkedIn](https://linkedin.com/in/nikhlesh-shukla-59713325a)
 
-* 👨‍💻 Ankush Gupta Vishwakarma
+* 👨‍💻 Ankush Gupta
   [GitHub](https://github.com/ankushgupta05) | [LinkedIn](https://linkedin.com/in/ankush-gupta-b734b025b)
 
 * 👨‍💻 Mustafa Qasim ALi
