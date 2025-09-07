@@ -45,30 +45,42 @@
 - `Git Cli`
 - `RAM 8GB or Above`
 - `Python 3.12`
-- `Node.js LTS 18 or above`
+- `Node.js LTS 22 or above`
   
 ### 1. Clone Repository
 
 ```bash
 git clone https://github.com/nikhivishwaa/interview-sathi-backend.git backend
-git clone https://github.com/nikhivishwaa/interview-sathi-frontend.git frontend
+git clone https://github.com/nikhivishwaa/interview-sathi.git frontend
 cd backend
 ```
 
 ### 2. Backend Setup
 
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+##### Dev server
+```
+docker-compose -f docker-compose-dev.yml up --build
+```
+
+##### Prod server
+```
+docker-compose up -d --build
+```
+
+###### Collect staticfiles and create superuser
+```
+docker exec -it django_app ash
+```
+```
 python manage.py makemigration
 python manage.py migrate
+python manage.py collectstatic
 python manage.py createsuperuser
 ```
 
-### 3. Stop Server and Run Following Command
-```bash
-docker compose up
+### 3. Stop Server
+```
+docker compose -f docker-compose-dev.yml down
 ```
 
 ### 4. Frontend Setup
