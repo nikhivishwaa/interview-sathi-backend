@@ -41,6 +41,9 @@ class SignupViewSet(APIView):
                 response = {
                     'status': 'success',
                     'message': 'User registered successfully',
+                    'data': {
+                        "userId": user.id
+                        }
                     }
                 return Response(response, status=status.HTTP_201_CREATED)
             
@@ -61,19 +64,19 @@ class ChangePasswordView(UpdateAPIView):
         return obj
     
     def update(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        user = self.get_object()
         serializer = self.get_serializer(data=request.data)
         
         if serializer.is_valid():
-            if not self.object.check_password(serializer.data.get('old_password')):
+            if not user.check_password(serializer.data.get('old_password')):
                 response = {
                     'status': 'failed',
                     'message': 'Old password is incorrect'
                 }
                 return Response(response, status=status.HTTP_400_BAD_REQUEST)
             
-            self.object.set_password(serializer.data.get('new_password'))
-            self.object.save()
+            user.set_password(serializer.data.get('new_password'))
+            user.save()
             response = {
                 'status': 'success',
                 'message': 'Password updated successfully'

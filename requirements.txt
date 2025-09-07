@@ -77,6 +77,5 @@ urllib3==2.3.0
 uvicorn==0.34.2
 watchfiles==1.0.5
 websockets==15.0.1
-whitenoise==6.9.0
 zope.interface==7.2
 zstandard==0.23.0

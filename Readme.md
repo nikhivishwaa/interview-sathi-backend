@@ -1,13 +1,9 @@
+##### Run the Dev server
 ```
-python -m virtualenv env -p python312
-```
-
-### emable env
-```
-./env/Scripts/activate
+docker-compose -f docker-compose-dev.yml up --build
 ```
 
-# run server
+##### Run the Prod server
 ```
-python manage.py runserver
+docker-compose up --build
 ```

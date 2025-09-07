@@ -21,3 +21,6 @@ node_modules/
 *.glb
 *.zip
 *.tar.gz
+nginx.conf
+.gitignore
+Readme.md

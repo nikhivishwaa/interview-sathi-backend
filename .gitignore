@@ -4,4 +4,6 @@ __pycache__/
 .env
 *.sqlite3
 media/
+static/
 *.sh
+.prod/
