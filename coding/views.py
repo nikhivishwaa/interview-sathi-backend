@@ -336,16 +336,20 @@ class CompileAndRunAPIView(APIView):
         return Response(result)
 
 
+from django.db import connection, transaction
+
 class SubmitAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request, ps_id):
         user = request.user
-        question = get_object_or_404(CodingQuestion, id=ps_id, is_deleted=False, visibility='public')
+        question = get_object_or_404(
+            CodingQuestion, id=ps_id, is_deleted=False, visibility="public"
+        )
 
         code = request.data.get("code")
         language_id = request.data.get("language")
-        language = get_object_or_404(Language, name=language_id)
+        language = get_object_or_404(Language, id=language_id)
 
         # create submission record
         submission = Submission.objects.create(
@@ -354,7 +358,7 @@ class SubmitAPIView(APIView):
             code=code,
             language=language,
             status="In Progress",
-            metadata={}
+            metadata={},
         )
 
         # fetch all testcases
@@ -363,45 +367,69 @@ class SubmitAPIView(APIView):
         payload = {
             "code": code,
             "language": language.name.lower(),
-            "testcases": all_testcases
+            "testcases": all_testcases,
         }
-
         results = async_to_sync(run_worker)(payload).get("results", [])
 
-        # save logs
-        logs = []
+        # build rows for raw insert
+        rows = []
         status_overall = "Accepted"
         for r in results:
-            tc = get_object_or_404(TestCase, id=r["testcase"])
             status_log = "Pass" if r["status"] == "Accepted" else "Failed"
             if status_log == "Failed":
                 status_overall = "Rejected"
 
-            logs.append(
-                SubmissionLog(
-                    submission=submission,
-                    testcase=tc,
-                    actual_output=r["actual_output"],
-                    stderr=r["stderr"],
-                    time_taken=r["time_taken"],
-                    status=status_log,
-                )
+            rows.append(
+                f"""({submission.id},{r["testcase"]},'{r["actual_output"]}','{r["stderr"]}',{r["time_taken"]},'{status_log}','{r["status"]}')"""
             )
 
-        SubmissionLog.objects.bulk_create(logs)
+        # raw SQL bulk insert + submission update
+        with transaction.atomic(), connection.cursor() as cursor:
+            if rows:
+                cursor.execute(
+                    f"""
+                    INSERT INTO submission_logs
+                    (submission_id, testcase_id, actual_output, stderr, time_taken, status, message)
+                    VALUES {",".join(rows)}
+                    """
+                )
 
-        # update submission status
+        # fetch only visible testcase logs
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT sl.id, sl.testcase_id, tc.input_data, tc.expected_output, tc.score, 
+                    sl.actual_output, sl.stderr, sl.time_taken, sl.status, sl.message
+                FROM submission_logs sl
+                JOIN test_cases tc ON sl.testcase_id = tc.id
+                WHERE sl.submission_id = %s AND tc.is_hidden = FALSE
+                """,
+                [submission.id],
+            )
+            visible_results = [
+                {
+                    "log_id": row[0],
+                    "testcase": row[1],
+                    "input_data":row[2],
+                    "expected_output":row[3],
+                    "score":row[4],
+                    "actual_output": row[5],
+                    "stderr": row[6],
+                    "time_taken": row[7],
+                    "status": row[8],
+                    "message": row[9],
+                }
+                for row in cursor.fetchall()
+            ]
+
         submission.status = status_overall
-        submission.metadata = {"results": results}
         submission.save()
 
-        # return visible results only
-        visible_testcases = [t for t in all_testcases if not TestCase.objects.get(id=t["id"]).is_hidden]
-        visible_results = [r for r in results if r["testcase"] in [t["id"] for t in visible_testcases]]
+        return Response(
+            {"submission_id": submission.id, "results": visible_results}
+        )
 
-        return Response({"submission_id": submission.id, "results": visible_results})
-
-
+    
 class CustomRunAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -130,6 +130,9 @@ class Submission(models.Model):
             models.Index(fields=["user", "question"]),
         ]
 
+    def __str__(self):
+        return f"Submission #{self.id}"
+
 
 class SubmissionLog(models.Model):
     STATUS_CHOICES = [
@@ -142,8 +145,13 @@ class SubmissionLog(models.Model):
     stderr = models.TextField(blank=True)
     time_taken = models.FloatField(default=0.0)
     status = models.CharField(max_length=10,choices=STATUS_CHOICES)
+    message = models.CharField(max_length=30, default="", null=False, blank=False)
 
     class Meta:
         db_table = "submission_logs"
-        ordering = ["submission", "id"]
+        ordering = ["submission", "testcase"]
+        unique_together = ["submission", "testcase"]
         indexes = [models.Index(fields=["submission", "testcase"])]
+
+    def __str__(self):
+        return f"{self.submission}"

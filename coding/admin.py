@@ -31,7 +31,7 @@ class TestCaseAdmin(admin.ModelAdmin):
 
 @admin.register(CodingSolution)
 class CodingSolutionAdmin(admin.ModelAdmin):
-    list_display = ("question", "language", "created_at", "is_deleted")
+    list_display = ("id", "question", "language", "created_at", "is_deleted")
     search_fields = ("question__title", "language__name")
     list_filter = ("language", "is_deleted")
     ordering = ("-created_at",)
@@ -39,7 +39,7 @@ class CodingSolutionAdmin(admin.ModelAdmin):
 
 @admin.register(Submission)
 class SubmissionAdmin(admin.ModelAdmin):
-    list_display = ("user", "question", "language", "status", "created_at")
+    list_display = ("id", "user", "question", "language", "status", "created_at")
     search_fields = ("user__first_name", "question__title")
     list_filter = ("status", "language", "created_at")
     ordering = ("-created_at",)
@@ -48,7 +48,7 @@ class SubmissionAdmin(admin.ModelAdmin):
 
 @admin.register(SubmissionLog)
 class SubmissionLogAdmin(admin.ModelAdmin):
-    list_display = ("submission", "testcase", "status", "time_taken")
-    search_fields = ("submission__user__first_name", "submission__question__title")
+    list_display = ("id", "submission", "testcase", "status", "time_taken")
+    search_fields = ("submission__id", "submission__user__first_name", "submission__question__title")
     list_filter = ("status",)
     ordering = ("submission", "id")
