@@ -155,9 +155,11 @@ CHANNEL_LAYERS = {
 LLM_API_URL = os.getenv('LLM_API_URL')
 LLM_MODEL_NAME = os.getenv('LLM_MODEL_NAME')
 
+# FastAPI worker
+WORKER_URL = os.getenv('WORKER_URL','http://host.docker.internal:5500')
+
+
 # JWT authentication
-
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",

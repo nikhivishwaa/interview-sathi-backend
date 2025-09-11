@@ -5,7 +5,7 @@ from coding.models import CodingQuestion, TestCase
 class TestCaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCase
-        fields = "__all__"
+        fields = ('id', 'input_data', 'expected_output')
 
 
 class CodingQuestionSerializer(serializers.ModelSerializer):
