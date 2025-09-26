@@ -20,12 +20,15 @@ jobs:
           echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
           echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
-          echo "WORKER_URL=${{ secrets.WORKER_URL }}" >> .env
           echo "CORS_ALLOW_ALL_ORIGINS=${{ secrets.CORS_ALLOW_ALL_ORIGINS }}" >> .env
-          echo "X_FRAME_OPTIONS=${{ secrets.X_FRAME_OPTIONS }}" >> .env
+          echo "CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}" >> .env
+          echo "WORKER_URL=${{ secrets.WORKER_URL }}" >> .env
           echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
           echo "LLM_MODEL_NAME=${{ secrets.LLM_MODEL_NAME }}" >> .env
           echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+          echo "JOBS_API=${{ secrets.JOBS_API }}" >> .env
+          echo "JOBS_API_APP_ID=${{ secrets.JOBS_API_APP_ID }}" >> .env
+          echo "JOBS_API_CLIENT_ID=${{ secrets.JOBS_API_CLIENT_ID }}" >> .env
           
       - name: Build and start containers
         run: docker compose -f docker-compose-dev.yml up -d --build
@@ -59,3 +62,43 @@ jobs:
         run: |
           echo "💚 Checking health endpoint..."
           curl -s http://localhost/health/ || echo "❌ Health endpoint not available"
+
+
+      - name: Deploy to EC2
+        run: |
+          echo "🛠 Setting up SSH key..."
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          
+          echo "🔄 Connecting to EC2 and updating app..."
+          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            cd ${{ secrets.EC2_APP_DIR }}
+            echo "Pulling latest code from Git..."
+            git pull
+            echo "Updating .env file from latest secrets..."
+            cat > .env << ENV_EOF
+            ALLOWED_HOSTS="${{ secrets.ALLOWED_HOSTS }}"
+            SECRET_KEY="${{ secrets.SECRET_KEY }}"
+            CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
+            CORS_ALLOW_ALL_ORIGINS=${{ secrets.CORS_ALLOW_ALL_ORIGINS }}
+            CSRF_TRUSTED_ORIGINS="${{ secrets.CSRF_TRUSTED_ORIGINS }}"
+
+            # worker
+            WORKER_URL=${{ secrets.WORKER_URL }}
+
+            # model
+            LLM_MODEL_NAME=${{ secrets.LLM_MODEL_NAME }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            
+            # cache
+            REDIS_HOST=${{ secrets.REDIS_HOST }}
+            
+            # jobs
+            JOBS_API=${{ secrets.JOBS_API }}
+            JOBS_API_APP_ID=${{ secrets.JOBS_API_APP_ID }}
+            JOBS_API_CLIENT_ID=${{ secrets.JOBS_API_CLIENT_ID }}
+          ENV_EOF
+            echo "✅ Deployment completed!"
+          EOF
