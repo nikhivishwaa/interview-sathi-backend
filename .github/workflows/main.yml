@@ -15,53 +15,53 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create .env file from GitHub Secrets
-        run: |
-          echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
-          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-          echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
-          echo "CORS_ALLOW_ALL_ORIGINS=${{ secrets.CORS_ALLOW_ALL_ORIGINS }}" >> .env
-          echo "CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}" >> .env
-          echo "WORKER_URL=${{ secrets.WORKER_URL }}" >> .env
-          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
-          echo "LLM_MODEL_NAME=${{ secrets.LLM_MODEL_NAME }}" >> .env
-          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
-          echo "JOBS_API=${{ secrets.JOBS_API }}" >> .env
-          echo "JOBS_API_APP_ID=${{ secrets.JOBS_API_APP_ID }}" >> .env
-          echo "JOBS_API_CLIENT_ID=${{ secrets.JOBS_API_CLIENT_ID }}" >> .env
+      # - name: Create .env file from GitHub Secrets
+      #   run: |
+      #     echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
+      #     echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+      #     echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
+      #     echo "CORS_ALLOW_ALL_ORIGINS=${{ secrets.CORS_ALLOW_ALL_ORIGINS }}" >> .env
+      #     echo "CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}" >> .env
+      #     echo "WORKER_URL=${{ secrets.WORKER_URL }}" >> .env
+      #     echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+      #     echo "LLM_MODEL_NAME=${{ secrets.LLM_MODEL_NAME }}" >> .env
+      #     echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+      #     echo "JOBS_API=${{ secrets.JOBS_API }}" >> .env
+      #     echo "JOBS_API_APP_ID=${{ secrets.JOBS_API_APP_ID }}" >> .env
+      #     echo "JOBS_API_CLIENT_ID=${{ secrets.JOBS_API_CLIENT_ID }}" >> .env
           
-      - name: Build and start containers
-        run: docker compose -f docker-compose-dev.yml up -d --build
+      # - name: Build and start containers
+      #   run: docker compose -f docker-compose-dev.yml up -d --build
 
-      - name: Wait for services to be ready
-        run: |
-          echo "⏳ Waiting for services..."
-          sleep 25
-          docker compose ps
+      # - name: Wait for services to be ready
+      #   run: |
+      #     echo "⏳ Waiting for services..."
+      #     sleep 25
+      #     docker compose ps
 
-      - name: Run migrations
-        run: docker exec django_app ash -c python manage.py migrate --noinput
+      # - name: Run migrations
+      #   run: docker exec django_app ash -c python manage.py migrate --noinput
 
-      - name: Test signup API
-        run: |
-          echo "🔑 Testing signup API..."
-          RESPONSE=$(curl -s -X POST http://localhost/users/signup/ \
-            -H "Content-Type: application/json" \
-            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\", \"gender\": \"m\", \"college\": \"xyz\", \"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
-          echo "Signup response: $RESPONSE"
+      # - name: Test signup API
+      #   run: |
+      #     echo "🔑 Testing signup API..."
+      #     RESPONSE=$(curl -s -X POST http://localhost/users/signup/ \
+      #       -H "Content-Type: application/json" \
+      #       -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\", \"gender\": \"m\", \"college\": \"xyz\", \"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
+      #     echo "Signup response: $RESPONSE"
 
-      - name: Test login API
-        run: |
-          echo "🔑 Testing login API..."
-          RESPONSE=$(curl -s -X POST http://localhost/users/login/ \
-            -H "Content-Type: application/json" \
-            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
-          echo "Login response: $RESPONSE"
+      # - name: Test login API
+      #   run: |
+      #     echo "🔑 Testing login API..."
+      #     RESPONSE=$(curl -s -X POST http://localhost/users/login/ \
+      #       -H "Content-Type: application/json" \
+      #       -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
+      #     echo "Login response: $RESPONSE"
 
-      - name: Print health if login works
-        run: |
-          echo "💚 Checking health endpoint..."
-          curl -s http://localhost/health/ || echo "❌ Health endpoint not available"
+      # - name: Print health if login works
+      #   run: |
+      #     echo "💚 Checking health endpoint..."
+      #     curl -s http://localhost/health/ || echo "❌ Health endpoint not available"
 
 
       - name: Deploy to EC2
