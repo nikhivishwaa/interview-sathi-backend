@@ -28,7 +28,7 @@ jobs:
           echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
           
       - name: Build and start containers
-        run: docker compose up -f docker-compose-dev.yml -d --build
+        run: docker compose -f docker-compose-dev.yml up -d --build
 
       - name: Wait for services to be ready
         run: |
