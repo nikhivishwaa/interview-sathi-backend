@@ -28,7 +28,7 @@ jobs:
           echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
           
       - name: Build and start containers
-        run: docker compose up -d --build
+        run: docker compose up -f docker-compose-dev.yml -d --build
 
       - name: Wait for services to be ready
         run: |
@@ -37,12 +37,12 @@ jobs:
           docker compose ps
 
       - name: Run migrations
-        run: docker compose exec -T backend python manage.py migrate --noinput
+        run: docker compose exec -T django_app python manage.py migrate --noinput
 
       - name: Test signup API
         run: |
           echo "🔑 Testing signup API..."
-          RESPONSE=$(curl -s -X POST http://localhost:8000/users/signup/ \
+          RESPONSE=$(curl -s -X POST http://localhost/users/signup/ \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\",\"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
           echo "Signup response: $RESPONSE"
@@ -50,7 +50,7 @@ jobs:
       - name: Test login API
         run: |
           echo "🔑 Testing login API..."
-          RESPONSE=$(curl -s -X POST http://localhost:8000/users/login/ \
+          RESPONSE=$(curl -s -X POST http://localhost/users/login/ \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
           echo "Login response: $RESPONSE"
@@ -58,4 +58,4 @@ jobs:
       - name: Print health if login works
         run: |
           echo "💚 Checking health endpoint..."
-          curl -s http://localhost:8000/health/ || echo "❌ Health endpoint not available"
+          curl -s http://localhost/health/ || echo "❌ Health endpoint not available"
