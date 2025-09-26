@@ -37,7 +37,7 @@ jobs:
           docker compose ps
 
       - name: Run migrations
-        run: docker exec -c django_app python manage.py migrate --noinput
+        run: docker exec django_app ash -c python manage.py migrate --noinput
 
       - name: Test signup API
         run: |
