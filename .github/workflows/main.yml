@@ -9,6 +9,7 @@ on:
 jobs:
   docker-test:
     runs-on: ubuntu-latest
+    environment: Dev
 
     steps:
       - name: Checkout code
