@@ -37,14 +37,14 @@ jobs:
           docker compose ps
 
       - name: Run migrations
-        run: docker compose exec -T django_app python manage.py migrate --noinput
+        run: docker exec -c django_app python manage.py migrate --noinput
 
       - name: Test signup API
         run: |
           echo "🔑 Testing signup API..."
           RESPONSE=$(curl -s -X POST http://localhost/users/signup/ \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\",\"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
+            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\", \"gender\": \"m\", \"college\": \"xyz\", \"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
           echo "Signup response: $RESPONSE"
 
       - name: Test login API
