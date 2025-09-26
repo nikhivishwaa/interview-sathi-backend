@@ -1,19 +1,67 @@
-name: Testing
+name: Docker Compose Test
 
 on:
   push:
-    branches:
-      - dev
+    branches: [ "dev" ]
   pull_request:
-    branches:
-      - dev
+    branches: [ "dev" ]
 
 jobs:
-  hello:
+  docker-test:
     runs-on: ubuntu-latest
+
+
+    env:
+      DJANGO_USER_EMAIL: ${{ secrets.USER_EMAIL }}
+      DJANGO_USER_FIRST_NAME: ${{ secrets.USER_FIRST_NAME }}
+      DJANGO_USER_PHONE: ${{ secrets.USER_PHONE }}
+      DJANGO_USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS}}
+      SECRET_KEY: ${{ secrets.SECRET_KEY}}
+      CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS}}
+      WORKER_URL: ${{ secrets.WORKER_URL}}
+      CORS_ALLOW_ALL_ORIGINS: ${{ secrets.CORS_ALLOW_ALL_ORIGINS}}
+      X_FRAME_OPTIONS: ${{ secrets.X_FRAME_OPTIONS}}
+      REDIS_HOST: ${{ secrets.REDIS_HOST}}
+      LLM_MODEL_NAME: ${{ secrets.LLM_MODEL_NAME}}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Say Hello
-        run: echo "🎉 Hello, World from GitHub Actions on the dev branch!"
+      - name: Copy env file
+        run: cp .env.example .env
+
+      - name: Build and start containers
+        run: docker compose up -d --build
+
+      - name: Wait for services to be ready
+        run: |
+          echo "⏳ Waiting for services..."
+          sleep 25
+          docker compose ps
+
+      - name: Run migrations
+        run: docker compose exec -T backend python manage.py migrate --noinput
+
+      - name: Test signup API
+        run: |
+          echo "🔑 Testing signup API..."
+          RESPONSE=$(curl -s -X POST http://localhost:8000/users/signup/ \
+            -H "Content-Type: application/json" \
+            -d "{\"email\": \"$DJANGO_USER_EMAIL\", \"phone\": \"$DJANGO_USER_PHONE\",\"first_name\": \"$DJANGO_USER_FIRST_NAME\", \"password\": \"$DJANGO_USER_PASSWORD\"}")
+          echo "Signup response: $RESPONSE"
+
+      - name: Test login API
+        run: |
+          echo "🔑 Testing login API..."
+          RESPONSE=$(curl -s -X POST http://localhost:8000/users/login/ \
+            -H "Content-Type: application/json" \
+            -d "{\"email\": \"$DJANGO_USER_EMAIL\", \"password\": \"$DJANGO_USER_PASSWORD\"}")
+          echo "Login response: $RESPONSE"
+
+      - name: Print health if login works
+        run: |
+          echo "💚 Checking health endpoint..."
+          curl -s http://localhost:8000/health/ || echo "❌ Health endpoint not available"
