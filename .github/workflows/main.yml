@@ -70,10 +70,12 @@ jobs:
           mkdir -p ~/.ssh
           printf "%s\n" "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          cat ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keygen -lf ~/.ssh/id_rsa || echo "❌ Invalid key"
           
           echo "🔄 Connecting to EC2 and updating app..."
-          ssh -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -tt -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             cd ${{ secrets.EC2_APP_DIR }}
             echo "Pulling latest code from Git..."
             git pull
