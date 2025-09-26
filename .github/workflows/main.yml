@@ -10,6 +10,3 @@ jobs:
     steps:
       - name: Deployement Check
       - run: echo "starting deployment"
-    
-      - name: Deployement Check
-      - run: echo "ending deployment"
