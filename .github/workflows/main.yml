@@ -10,29 +10,22 @@ jobs:
   docker-test:
     runs-on: ubuntu-latest
 
-
-    env:
-      DJANGO_USER_EMAIL: ${{ secrets.USER_EMAIL }}
-      DJANGO_USER_FIRST_NAME: ${{ secrets.USER_FIRST_NAME }}
-      DJANGO_USER_PHONE: ${{ secrets.USER_PHONE }}
-      DJANGO_USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
-      ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS}}
-      SECRET_KEY: ${{ secrets.SECRET_KEY}}
-      CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS}}
-      WORKER_URL: ${{ secrets.WORKER_URL}}
-      CORS_ALLOW_ALL_ORIGINS: ${{ secrets.CORS_ALLOW_ALL_ORIGINS}}
-      X_FRAME_OPTIONS: ${{ secrets.X_FRAME_OPTIONS}}
-      REDIS_HOST: ${{ secrets.REDIS_HOST}}
-      LLM_MODEL_NAME: ${{ secrets.LLM_MODEL_NAME}}
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY}}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy env file
-        run: cp .env.example .env
-
+      - name: Create .env file from GitHub Secrets
+        run: |
+          echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" >> .env
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+          echo "CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}" >> .env
+          echo "WORKER_URL=${{ secrets.WORKER_URL }}" >> .env
+          echo "CORS_ALLOW_ALL_ORIGINS=${{ secrets.CORS_ALLOW_ALL_ORIGINS }}" >> .env
+          echo "X_FRAME_OPTIONS=${{ secrets.X_FRAME_OPTIONS }}" >> .env
+          echo "REDIS_HOST=${{ secrets.REDIS_HOST }}" >> .env
+          echo "LLM_MODEL_NAME=${{ secrets.LLM_MODEL_NAME }}" >> .env
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> .env
+          
       - name: Build and start containers
         run: docker compose up -d --build
 
@@ -50,7 +43,7 @@ jobs:
           echo "🔑 Testing signup API..."
           RESPONSE=$(curl -s -X POST http://localhost:8000/users/signup/ \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"$DJANGO_USER_EMAIL\", \"phone\": \"$DJANGO_USER_PHONE\",\"first_name\": \"$DJANGO_USER_FIRST_NAME\", \"password\": \"$DJANGO_USER_PASSWORD\"}")
+            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"phone\": \"${{ secrets.USER_PHONE }}\",\"first_name\": \"${{ secrets.USER_FIRST_NAME }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
           echo "Signup response: $RESPONSE"
 
       - name: Test login API
@@ -58,7 +51,7 @@ jobs:
           echo "🔑 Testing login API..."
           RESPONSE=$(curl -s -X POST http://localhost:8000/users/login/ \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"$DJANGO_USER_EMAIL\", \"password\": \"$DJANGO_USER_PASSWORD\"}")
+            -d "{\"email\": \"${{ secrets.USER_EMAIL }}\", \"password\": \"${{ secrets.USER_PASSWORD }}\"}")
           echo "Login response: $RESPONSE"
 
       - name: Print health if login works
