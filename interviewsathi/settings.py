@@ -65,6 +65,7 @@ EXTERNAL_APPS = [
                  'accounts',
                  'interview',
                  'coding',
+                 'jobs',
                  'channels'
 ]
 
@@ -154,6 +155,11 @@ CHANNEL_LAYERS = {
 # llm
 LLM_API_URL = os.getenv('LLM_API_URL')
 LLM_MODEL_NAME = os.getenv('LLM_MODEL_NAME')
+
+# jobs
+JOBS_API = os.getenv('JOBS_API')
+JOBS_API_APP_ID = os.getenv('JOBS_API_APP_ID')
+JOBS_API_CLIENT_ID = os.getenv('JOBS_API_CLIENT_ID')
 
 # FastAPI worker
 WORKER_URL = os.getenv('WORKER_URL','http://host.docker.internal:5500')
