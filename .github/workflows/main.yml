@@ -65,17 +65,13 @@ jobs:
 
 
       - name: Deploy to EC2
-        run: |
-          echo "🛠 Setting up SSH key..."
-          mkdir -p ~/.ssh
-          printf "%s\n" "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          cat ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-          ssh-keygen -lf ~/.ssh/id_rsa || echo "❌ Invalid key"
-          
-          echo "🔄 Connecting to EC2 and updating app..."
-          ssh -tt -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🔄 Connecting to EC2 and updating app..."
             cd ${{ secrets.EC2_APP_DIR }}
             echo "Pulling latest code from Git..."
             git pull
@@ -101,6 +97,5 @@ jobs:
             JOBS_API=${{ secrets.JOBS_API }}
             JOBS_API_APP_ID=${{ secrets.JOBS_API_APP_ID }}
             JOBS_API_CLIENT_ID=${{ secrets.JOBS_API_CLIENT_ID }}
-          ENV_EOF
+            ENV_EOF
             echo "✅ Deployment completed!"
-          EOF
