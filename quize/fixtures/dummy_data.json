@@ -1,0 +1,111 @@
+[
+    {
+      "model": "quize.quizcategory",
+      "pk": 1,
+      "fields": {
+        "name": "Frontend",
+        "description": "Quizzes related to HTML, CSS, JavaScript"
+      }
+    },
+    {
+      "model": "quize.quizcategory",
+      "pk": 2,
+      "fields": {
+        "name": "Backend",
+        "description": "Quizzes related to Python, Django, Databases"
+      }
+    },
+    {
+      "model": "quize.quiz",
+      "pk": 1,
+      "fields": {
+        "title": "HTML Basics",
+        "description": "Test your basic HTML knowledge",
+        "category": 1,
+        "duration_minutes": 10
+      }
+    },
+    {
+      "model": "quize.quiz",
+      "pk": 2,
+      "fields": {
+        "title": "Django Basics",
+        "description": "Test your Django fundamentals",
+        "category": 2,
+        "duration_minutes": 15
+      }
+    },
+    {
+      "model": "quize.question",
+      "pk": 1,
+      "fields": {
+        "quiz": 1,
+        "text": "What does HTML stand for?",
+        "marks": 5
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 1,
+      "fields": {
+        "question": 1,
+        "text": "Hyper Text Markup Language",
+        "is_correct": true
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 2,
+      "fields": {
+        "question": 1,
+        "text": "High Text Markup Language",
+        "is_correct": false
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 3,
+      "fields": {
+        "question": 1,
+        "text": "Hyperlinks and Text Markup Language",
+        "is_correct": false
+      }
+    },
+    {
+      "model": "quize.question",
+      "pk": 2,
+      "fields": {
+        "quiz": 2,
+        "text": "Which command is used to create a new Django project?",
+        "marks": 5
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 4,
+      "fields": {
+        "question": 2,
+        "text": "django-admin startproject",
+        "is_correct": true
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 5,
+      "fields": {
+        "question": 2,
+        "text": "django-admin newproject",
+        "is_correct": false
+      }
+    },
+    {
+      "model": "quize.option",
+      "pk": 6,
+      "fields": {
+        "question": 2,
+        "text": "python manage.py startproject",
+        "is_correct": false
+      }
+    }
+  ]
+  

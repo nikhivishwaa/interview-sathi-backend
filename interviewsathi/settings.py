@@ -66,7 +66,8 @@ EXTERNAL_APPS = [
                  'interview',
                  'coding',
                  'jobs',
-                 'channels'
+                 'channels',
+                 'quize'
 ]
 
 INSTALLED_APPS += EXTERNAL_APPS
