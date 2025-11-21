@@ -1,11 +1,18 @@
 from django.apps import AppConfig
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
+import os
 
 
 class AccountsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'accounts'
 
-    # def ready(self):
-    #     from accounts.signals import handle_profile_pic, pre_save, User
 
-    #     pre_save.connect(handle_profile_pic, sender=User)
+# initialize firebase app
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+cred = credentials.Certificate(os.path.join(BASE_DIR, "service-account.json"))
+
+firebase_app = None
+if not firebase_admin._apps:
+    firebase_app = firebase_admin.initialize_app(cred)
