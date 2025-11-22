@@ -26,6 +26,7 @@ class User(AbstractUser):
     profile_pic = models.FileField(storage=PublicMediaStorage(), upload_to="avatars/", null=True, blank=True)
     last_modified = models.DateField(auto_now=True)
     bio = models.TextField(blank=True, null=True)
+
     # verification detail
     verified = models.BooleanField(default=False)
     email_otp = models.CharField(max_length=6,blank=True, null=True)
@@ -34,11 +35,13 @@ class User(AbstractUser):
     phone_otp = models.CharField(max_length=6,blank=True, null=True)
     phone_otp_ts = models.DateTimeField(blank=True, null=True)
     phone_verified_at = models.DateTimeField(blank=True, null=True)
+
     # forgot password
     fget_otp = models.CharField(max_length=6,blank=True, null=True)
     fget_token = models.CharField(max_length=100, null=True, blank=True)
     fget_otp_ts = models.DateTimeField(blank=True, null=True)
     last_fget = models.DateTimeField(blank=True, null=True)
+
     # suspension
     suspended = models.BooleanField(default=True)
 
