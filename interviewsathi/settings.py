@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'storages',
 ]
 
 EXTERNAL_APPS = [
@@ -214,12 +215,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME")
+AWS_S3_SIGNATURE_VERSION = "s3v4"
 
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# CloudFront domain CDN
+CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")
+AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+# General S3 behaviour
+AWS_S3_FILE_OVERWRITE = False  
+AWS_DEFAULT_ACL = None         
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=14400",  # 4 hour
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "interviewsathi.storage_backends.PublicMediaStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "interviewsathi.storage_backends.StaticStorage",
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

@@ -1,5 +1,7 @@
 from django.db import models
 from accounts.models import User
+from interviewsathi.storage_backends import PrivateMediaStorage
+
 
 class QuestionPDF(models.Model):
     DOMAIN_CHOICES = (
@@ -13,7 +15,7 @@ class QuestionPDF(models.Model):
         ('l4', 'Pro'),
     )
     title = models.CharField(max_length=255)
-    pdf_file = models.FileField(upload_to='question_pdfs/')
+    pdf_file = models.FileField(storage=PrivateMediaStorage(), upload_to='question_pdfs/')
     domain = models.CharField(max_length=20, choices=DOMAIN_CHOICES)
     level = models.CharField(max_length=20, choices=DIFFICULTY_LEVEL)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -26,7 +28,7 @@ class QuestionPDF(models.Model):
 class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=False, blank=False)
-    file = models.FileField(upload_to='resumes/')
+    file = models.FileField(storage=PrivateMediaStorage(), upload_to='resumes/')
     uploaded_at = models.DateTimeField(auto_now_add=True, null=False, blank=False)
     parsed_text = models.TextField(blank=True, null=True)
     last_updated = models.DateTimeField(auto_now=True, null=False, blank=False)

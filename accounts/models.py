@@ -5,6 +5,8 @@ from django.core.validators import EmailValidator
 from accounts import validators as v
 import datetime as dt
 from django.conf import settings
+from interviewsathi.storage_backends import PublicMediaStorage
+
 
 class User(AbstractUser):
     GENDER = (
@@ -21,7 +23,7 @@ class User(AbstractUser):
     gender = models.CharField(max_length=10, blank=True, choices=GENDER)
     college = models.CharField(max_length=100, blank=True)
     dob = models.DateField(blank=True, null=True)
-    profile_pic = models.FileField(upload_to='profile/', null=True, blank=True)
+    profile_pic = models.FileField(storage=PublicMediaStorage(), upload_to="avatars/", null=True, blank=True)
     last_modified = models.DateField(auto_now=True)
     bio = models.TextField(blank=True, null=True)
     # verification detail
