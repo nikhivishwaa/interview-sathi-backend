@@ -66,6 +66,7 @@ EXTERNAL_APPS = [
                  'accounts',
                  'interview',
                  'coding',
+                 'resume',
                  'jobs',
                  'channels'
 ]
