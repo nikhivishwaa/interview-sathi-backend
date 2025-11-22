@@ -7,3 +7,4 @@ media/
 static/
 *.sh
 .prod/
+service-account.json

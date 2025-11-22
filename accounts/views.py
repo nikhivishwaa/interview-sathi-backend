@@ -14,9 +14,9 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-
 from rest_framework.generics import UpdateAPIView
-
+from firebase_admin import auth as firebase_auth
+from accounts.apps import firebase_app
 
 
 class SignupViewSet(APIView):
@@ -212,3 +212,51 @@ class LoginViewSet(APIView):
         }
         
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class FirebaseLoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        id_token = request.data.get("id_token")
+
+        if not id_token:
+            res = {
+                    'status': 'failed',
+                    'message': 'ID token is required',
+                }
+            return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Verifying Firebase token
+            decoded_token = firebase_auth.verify_id_token(id_token)
+            print(decoded_token)
+            uid = decoded_token["uid"]
+            email = decoded_token.get("email")
+            name = decoded_token.get("name", "")
+
+        except Exception as e:
+            response = {
+                    'status': 'failed',
+                    'message': 'Invalid Firebase token'
+                }
+            return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+        # Finding local user
+        if email:
+            user  = User.objects.get(email=email)
+            refresh = RefreshToken.for_user(user)
+            user_data = ProfileSerializer(user).data
+        
+            response = {
+                'status': 'success',
+                'message': 'User logged in successfully',
+                'data': {
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user': user_data,
+                }
+            }
+
+            print('user', user, 'logged in')
+            return Response(response, status=status.HTTP_200_OK)
