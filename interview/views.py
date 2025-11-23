@@ -45,8 +45,11 @@ class ResumeAPIView(APIView):
         
             resume_file.name = f"{uuid.uuid4()}_{resume_file.name[-10:]}"
             resume = Resume.objects.create(user=request.user, file=resume_file, name=resume_name)
-            raw_text = parse_resume_text(resume.file.path)
-            cleaned_text = clean_resume_text(raw_text)
+            
+            with resume.file.open("rb") as f:
+                raw_text = parse_resume_text(f)  # change this function to accept file-like
+                cleaned_text = clean_resume_text(raw_text)
+
             resume.parsed_text = cleaned_text
             resume.save()
 

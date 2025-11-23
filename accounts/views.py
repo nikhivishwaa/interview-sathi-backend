@@ -24,7 +24,6 @@ class SignupViewSet(APIView):
     
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
-        print(type(serializer))
         if serializer.is_valid():
             data = serializer.validated_data
             user = User.objects.filter(Q(phone=data.get('phone')) | Q(email=data.get('email')))
@@ -45,6 +44,14 @@ class SignupViewSet(APIView):
                         "userId": user.id
                         }
                     }
+                # sso login
+                if user.verified:
+                    refresh = RefreshToken.for_user(user)
+                    user_data = ProfileSerializer(user).data
+                    response['data']['refresh'] = str(refresh)
+                    response['data']['access'] = str(refresh.access_token)
+                    response['data']['user'] = user_data
+            
                 return Response(response, status=status.HTTP_201_CREATED)
             
         response = {
@@ -121,13 +128,13 @@ class ProfileViewSet(APIView):
                 if user.phone != data['phone']:
                     try:
                         user = User.objects.get(phone=data.get('phone'))
-                        res = {
+                        response = {
                             "status":"failed",
                             "message":"Phone Number is Already Used. Try Another Number!",
                             "data":{}
                         }
 
-                        return Response(res, status=status.HTTP_409_CONFLICT)
+                        return Response(response, status=status.HTTP_409_CONFLICT)
                     except Exception as e:
                         pass
 
@@ -136,27 +143,27 @@ class ProfileViewSet(APIView):
                         setattr(user, key, value)
                 user.save()
                 p_serializer = ProfileSerializer(user)
-                res = {
+                response = {
                     'status': 'success',
                     'message': 'Profile Updated Successfully',
                     'data': p_serializer.data
                 }
-                return Response(res, status=status.HTTP_202_ACCEPTED)
+                return Response(response, status=status.HTTP_202_ACCEPTED)
             else:
-                res = {
+                response = {
                     'status': 'failed',
                     'message': 'Invalid Data',
                     'data': {},
                     'errors': serializer.errors
                 }
-                return Response(res, status=status.HTTP_400_BAD_REQUEST)
+                return Response(response, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            res = {
+            response = {
                 'status': 'failed',
                 'message': 'Something went Wrong!',
                 'data': {},
             }
-            return Response(res, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LoginViewSet(APIView):
@@ -221,11 +228,11 @@ class FirebaseLoginView(APIView):
         id_token = request.data.get("id_token")
 
         if not id_token:
-            res = {
+            response = {
                     'status': 'failed',
                     'message': 'ID token is required',
                 }
-            return Response(res, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Verifying Firebase token
@@ -233,30 +240,38 @@ class FirebaseLoginView(APIView):
             print(decoded_token)
             uid = decoded_token["uid"]
             email = decoded_token.get("email")
-            name = decoded_token.get("name", "")
 
         except Exception as e:
             response = {
                     'status': 'failed',
                     'message': 'Invalid Firebase token'
                 }
-            return Response(res, status=status.HTTP_400_BAD_REQUEST)
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
         # Finding local user
         if email:
-            user  = User.objects.get(email=email)
-            refresh = RefreshToken.for_user(user)
-            user_data = ProfileSerializer(user).data
-        
-            response = {
-                'status': 'success',
-                'message': 'User logged in successfully',
-                'data': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                    'user': user_data,
+            try:
+                user  = User.objects.get(email=email)
+                refresh = RefreshToken.for_user(user)
+                user_data = ProfileSerializer(user).data
+            
+                response = {
+                    'status': 'success',
+                    'message': 'User logged in successfully',
+                    'data': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'user': user_data,
+                    }
                 }
-            }
 
-            print('user', user, 'logged in')
-            return Response(response, status=status.HTTP_200_OK)
+                print('user', user, 'logged in')
+                return Response(response, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                response = {
+                    'status': 'success',
+                    'message': 'Complete the Signup'
+                }
+
+                print('new user with sso')
+                return Response(response, status=status.HTTP_202_ACCEPTED)

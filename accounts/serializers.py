@@ -47,7 +47,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'email', 'phone', 'first_name', 'last_name',
-            'gender', 'college', 'password'
+            'gender', 'college', 'password', 'verified'
         ]
         extra_kwargs = {
             'email': {
@@ -77,6 +77,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             last_name=validated_data['last_name'],
             gender=validated_data['gender'],
             college=validated_data['college'],
+            verified=validated_data['verified'],
         )
         user.set_password(validated_data['password'])
         user.save()
