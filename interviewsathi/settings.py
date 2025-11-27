@@ -166,6 +166,9 @@ JOBS_API_CLIENT_ID = os.getenv('JOBS_API_CLIENT_ID')
 # FastAPI worker
 WORKER_URL = os.getenv('WORKER_URL','http://host.docker.internal:5500')
 
+# Lambda
+RESUME_VALIDATOR_LAMBDA_NAME = os.getenv('RESUME_VALIDATOR_LAMBDA_NAME')
+
 
 # JWT authentication
 REST_FRAMEWORK = {
